@@ -6,36 +6,85 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
+	"strconv"
+	"strings"
+	//"time"
 )
 
 func main() {
-	var ch chan int
-	go func() {
-		for {
-			ticker1 := time.NewTimer(86399 * time.Second)
-			go GetDraw()
-			<-ticker1.C
-		}
-		ch <- 1
-	}()
-	//Sign()
-	//报名即中通知
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				println(r)
+	//var (
+	//	next time.Time
+	//	ch   chan int
+	//)
+	//go func() {
+	//	for {
+	//		go GetDraw()
+	//		now := time.Now()
+	//		sendDay := now.Add(time.Hour * 24)
+	//		next = time.Date(sendDay.Year(), sendDay.Month(), sendDay.Day(), 12, 0, 0, 0, sendDay.Location())
+	//		ticker1 := time.NewTimer(next.Sub(now))
+	//		<-ticker1.C
+	//	}
+	//	ch <- 1
+	//}()
+	////Sign()
+	////报名即中通知
+	//go func() {
+	//	defer func() {
+	//		if r := recover(); r != nil {
+	//			println(r)
+	//		}
+	//	}()
+	//	for {
+	//		ticker2 := time.NewTimer(20 * time.Second)
+	//		GetFree()
+	//		<-ticker2.C
+	//	}
+	//	ch <- 1
+	//}()
+	//<-ch
+	GetCheap()
+}
+
+func GetCheap() {
+	var (
+		url         string
+		detailMap   = make(map[string]interface{})
+		goodsMap    = make(map[string]map[string]string)
+		contentData string
+	)
+	for i := 1; i <= 3; i++ {
+		for page := 0; page < 60; page++ {
+			url = "http://t.dianping.com/list/xiamen-category_" + strconv.Itoa(i)
+			if page != 0 {
+				url += "?pageIndex=" + strconv.Itoa(page)
 			}
-		}()
-		for {
-			ticker2 := time.NewTimer(20 * time.Second)
-			println("run")
-			GetFree()
-			<-ticker2.C
+			data := util.RequestGet(url)
+			contentData = strings.Replace(string(data), "\n", "", -1)
+			contentData = strings.Replace(contentData, " ", "", -1)
+			idArr := util.GetBetween(contentData, "{'dealId':'", "'}\">", 0)
+			titleArr := util.GetBetween(contentData, "<h3>", "</h3>", 10)
+			detailArr := util.GetBetween(contentData, "<h4>", "</h4>", 0)
+			for k, v := range idArr {
+				goodsMap[v] = map[string]string{
+					"tittle": titleArr[k],
+					"detail": detailArr[k],
+				}
+			}
+			Put(goodsMap)
+			ids := ""
+			for k, v := range idArr {
+				if k != 0 {
+					ids += "%2C"
+				}
+				ids += v
+			}
+			detailData := util.RequestGet("http://t.dianping.com/jsonp/dealPromo?ids=" + ids)
+			json.Unmarshal(detailData, &detailMap)
+			Put(detailMap["msg"].(map[string]interface{})["promo"])
+			return
 		}
-		ch <- 1
-	}()
-	<-ch
+	}
 }
 
 //todo报名操作，未实现
@@ -58,8 +107,7 @@ func Sign() {
 		"isShareSina":       "false",
 		"isShareQQ":         "false",
 	}
-	cookies := map[string]string{
-	}
+	cookies := map[string]string{}
 	headers := map[string]string{
 		"Accept":           "application/json, text/javascript",
 		"Accept-Encoding":  "gzip, deflate",
@@ -199,7 +247,6 @@ func GetDraw() {
 		json.Unmarshal([]byte(req), &data)
 		for _, v := range data["data"].(map[string]interface{})["detail"].([]interface{}) {
 			if int(v.(map[string]interface{})["mode"].(float64)) == 5 {
-				Put(util.City[id][0])
 				drawCity = append(drawCity, util.City[id][0])
 			}
 		}
@@ -210,4 +257,5 @@ func GetDraw() {
 	_, err = f.Write(content)
 	Check(err)
 	f.Close()
+	util.SendEmail("DP助手", "天天抽城市列表:"+string(content), []string{"1148031762@qq.com"})
 }

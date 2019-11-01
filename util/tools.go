@@ -2,13 +2,13 @@ package util
 
 import "strings"
 
-func GetBetween(text, start, end string) (data []string) {
+func GetBetween(text, start, end string, x int) (data []string) {
 	for k, v := range strings.Split(text, start) {
-		if k > 0 {
+		if k > x {
 			data = append(data, strings.Split(v, end)[0])
 		}
 	}
-	return
+	return data
 }
 func InArray(arr []string, str string) bool {
 	ret := false
