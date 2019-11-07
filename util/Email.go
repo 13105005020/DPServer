@@ -22,5 +22,7 @@ func SendEmail(title, body string, to []string) {
 	contentType := "Content-Type: text/plain; charset=UTF-8"
 	msg := []byte("To: " + strings.Join(to, ",") + "\r\nFrom: " + nickname +
 		"<" + UserEmail + ">\r\nSubject: " + title + "\r\n" + contentType + "\r\n\r\n" + body)
-	smtp.SendMail(MailSmtpHost+MailSmtpPort, auth, UserEmail, to, msg)
+	for _, v := range SliceSlice(to, 1) {
+		smtp.SendMail(MailSmtpHost+MailSmtpPort, auth, UserEmail, v, msg)
+	}
 }
