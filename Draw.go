@@ -1,8 +1,9 @@
 package main
 
 import (
-	"awesomeProject/util"
+	"DPServer/util"
 	"encoding/json"
+	"strings"
 	"time"
 )
 
@@ -35,7 +36,7 @@ func main() {
 					"User-Agent":   "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.70 Safari/537.36",
 					"Content-Type": "application/json",
 				}
-				req := util.RequestPost(url, postData, headers)
+				req := util.RequestPost(url, postData,map[string]string{}, headers)
 				json.Unmarshal([]byte(req), &data)
 				if len(data["data"].(map[string]interface{})["detail"].([]interface{})) == 0 {
 					noDrawCityId = append(noDrawCityId, id)
@@ -46,10 +47,10 @@ func main() {
 					}
 				}
 			}
-			content, _ := json.Marshal(util.Unique(drawCity))
 			util.WriteTxt(util.Unique(drawCity), "draw_city.txt")
 			util.WriteTxt(noDrawCityId, "no_draw_city.txt")
-			util.SendEmail("DP助手", "今日天天抽城市列表:"+string(content), util.GetUser())
+			util.PushWeChat("DP助手", "今日天天抽城市列表:"+strings.Join(drawCity, ","))
+			//util.SendEmail("DP助手", "今日天天抽城市列表:"+strings.Join(drawCity, ","), util.GetUser())
 		}
 		ch <- 1
 	}()

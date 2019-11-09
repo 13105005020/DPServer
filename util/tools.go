@@ -1,8 +1,9 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
-	"gopkg.in/gin-gonic/gin.v1/json"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
@@ -19,11 +20,20 @@ func Put(data ...interface{}) {
 	for _, v := range data {
 		fmt.Printf("%+v ", v)
 	}
-	fmt.Printf("\n")
 }
 
-func ReadTxt(data interface{}, fileName string) {
-
+func Putln(data ...interface{}) {
+	for _, v := range data {
+		fmt.Printf("%+v ", v)
+	}
+	fmt.Printf("\n")
+}
+func ReadTxt(fileName string, data interface{}) {
+	f, err := os.OpenFile(fileName, os.O_RDWR, 0600)
+	content, err := ioutil.ReadAll(f)
+	f.Close()
+	Check(err)
+	json.Unmarshal(content, data)
 }
 
 func SliceSlice(data []string, length int) (ret [][]string) {
@@ -96,7 +106,15 @@ func InArray(arr []string, str string) bool {
 	}
 	return ret
 }
-
+func InArrayInt(arr []int, str int) bool {
+	ret := false
+	for _, val := range arr {
+		if str == val {
+			ret = true
+		}
+	}
+	return ret
+}
 func Unique(m []string) []string {
 	s := make([]string, 0)
 	sMap := make(map[string]string)

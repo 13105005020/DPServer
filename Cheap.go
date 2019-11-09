@@ -1,7 +1,7 @@
 package main
 
 import (
-	"awesomeProject/util"
+	"DPServer/util"
 	"encoding/json"
 	"math/rand"
 	"strconv"

@@ -73,6 +73,7 @@ var OpenCity = map[int][]string{
 		"573700968@qq.com",
 		"1094705039@qq.com",
 		"804231365@qq.com",
+		"1341339287@qq.com",
 	},
 	14: { //福州
 		"512932542@qq.com",
